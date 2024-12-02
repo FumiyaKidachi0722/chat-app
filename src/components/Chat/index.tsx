@@ -18,6 +18,7 @@ import { gpt3Response } from '@/hooks/openai';
 import { RootState } from '@/redux/store';
 
 import { ArrowUp } from '../atoms/Icon/HeroIcons';
+import { OverlaySpinner } from '../atoms/Icon/OverlaySpinner';
 
 type Message = {
   text: string;
@@ -30,6 +31,7 @@ export const Chat = () => {
   const selectedRoom = useSelector(
     (state: RootState) => state.room.selectedRoom
   );
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (!selectedRoom) return;
@@ -63,6 +65,9 @@ export const Chat = () => {
     const messageCollectionRef = collection(roomDocRef, 'messages');
     await addDoc(messageCollectionRef, messageData);
 
+    setInputMessage('');
+    setIsLoading(true);
+
     const response = gpt3Response(inputMessage);
     const botResponse = (await response).choices[0].message.content;
     await addDoc(messageCollectionRef, {
@@ -70,6 +75,8 @@ export const Chat = () => {
       sender: 'bot',
       createdAt: serverTimestamp(),
     });
+
+    setIsLoading(false);
   };
 
   return (
@@ -93,6 +100,8 @@ export const Chat = () => {
             </div>
           );
         })}
+
+        {isLoading && <OverlaySpinner />}
       </div>
 
       <div className="flex-shrink-0 relative">
@@ -101,6 +110,12 @@ export const Chat = () => {
           placeholder="Send a Message"
           className="border-2 rounded w-full pr-10 focus:outline-none p-2"
           onChange={(e) => setInputMessage(e.target.value)}
+          value={inputMessage}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              sendMessage();
+            }
+          }}
         />
         <button
           className="absolute inset-y-0 right-2 flex items-center"
