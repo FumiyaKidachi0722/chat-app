@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { AuthLoginTemplate } from '@/components/template/auth/login';
+import { AuthLoginTemplate } from '@/components/templates/auth/login';
 
 const LoginPage = () => {
   return <AuthLoginTemplate />;

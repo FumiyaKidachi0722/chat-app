@@ -1,8 +1,54 @@
-import React from 'react';
+'use client';
+
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  Timestamp,
+  where,
+} from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { db } from '@/firebase';
+import { RootState } from '@/redux/store';
 
 import { ArrowRightStartOnRectangle } from '../atoms/Icon/HeroIcons';
 
+type Room = {
+  id: string;
+  name: string;
+  createdAt: Timestamp;
+};
 export const Sidebar = () => {
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const userId = useSelector((state: RootState) => state.user.userId);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      if (!userId) return;
+      const roomCollectionRef = collection(db, 'rooms');
+      const q = query(
+        roomCollectionRef,
+        where('userId', '==', userId),
+        orderBy('createdAt')
+      );
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const newRooms: Room[] = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          name: doc.data().name,
+          createdAt: doc.data().createdAt,
+        }));
+        setRooms(newRooms);
+      });
+
+      return () => unsubscribe();
+    };
+
+    fetchRooms();
+  }, [userId]);
+
   return (
     <div
       className="h-full overflow-y-auto px-5 flex flex-col"
@@ -16,12 +62,14 @@ export const Sidebar = () => {
           <h1 className="text-gray-900 text-lg font-semibold p-4">New Chat</h1>
         </div>
         <ul>
-          <li className="curspr-pointer border-b p-4 text-gray-900 hover:bg-blue-100 duration-150">
-            Room 1
-          </li>
-          <li className="curspr-pointer border-b p-4 text-gray-900 hover:bg-blue-100 duration-150">
-            Room 2
-          </li>
+          {rooms.map((room) => (
+            <li
+              key={room.id}
+              className="curspr-pointer border-b p-4 text-gray-900 hover:bg-blue-100 duration-150"
+            >
+              {room.name}
+            </li>
+          ))}
         </ul>
       </div>
 

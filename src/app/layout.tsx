@@ -1,5 +1,8 @@
-import type { Metadata } from 'next';
+// src/app/layout.tsx
 import './globals.css';
+import type { Metadata } from 'next';
+
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'chat-app',
@@ -8,12 +11,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="ja">
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
