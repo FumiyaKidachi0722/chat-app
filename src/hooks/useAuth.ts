@@ -11,9 +11,7 @@ export const useAuthListener = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    console.log('--- start ---');
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('user: ', user);
       if (user) {
         dispatch(setUser(createUserPayload(user.uid, user.email)));
       } else {

@@ -9,9 +9,10 @@ import {
   where,
 } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { db } from '@/firebase';
+import { setSelectedRoom } from '@/redux/roomSlice';
 import { RootState } from '@/redux/store';
 
 import { ArrowRightStartOnRectangle } from '../atoms/Icon/HeroIcons';
@@ -24,6 +25,7 @@ type Room = {
 export const Sidebar = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const userId = useSelector((state: RootState) => state.user.userId);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -49,6 +51,10 @@ export const Sidebar = () => {
     fetchRooms();
   }, [userId]);
 
+  const selecteRoom = (roomId: string) => {
+    dispatch(setSelectedRoom(roomId));
+  };
+
   return (
     <div
       className="h-full overflow-y-auto px-5 flex flex-col"
@@ -66,6 +72,7 @@ export const Sidebar = () => {
             <li
               key={room.id}
               className="curspr-pointer border-b p-4 text-gray-900 hover:bg-blue-100 duration-150"
+              onClick={() => selecteRoom(room.id)}
             >
               {room.name}
             </li>

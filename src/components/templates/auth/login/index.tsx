@@ -22,8 +22,6 @@ export const AuthLoginTemplate = () => {
   } = useForm<Inputs>();
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    console.log('data: ', data);
-
     await signInWithEmailAndPassword(auth, data.email, data.password)
       .then(() => {
         router.push('/');

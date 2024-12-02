@@ -22,8 +22,6 @@ export const AuthRegisterTemplate = () => {
   } = useForm<Inputs>();
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    console.log('data: ', data);
-
     await createUserWithEmailAndPassword(auth, data.email, data.password)
       .then((userCrendential) => {
         const user = userCrendential.user;
