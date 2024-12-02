@@ -11,7 +11,5 @@ export const gpt3Response = async (inputMessage: string) => {
     model: 'gpt-3.5-turbo',
   });
 
-  console.log('response: ', response);
-
   return response;
 };

@@ -10,7 +10,7 @@ import {
   serverTimestamp,
   Timestamp,
 } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { db } from '@/firebase';
@@ -27,11 +27,16 @@ type Message = {
 };
 export const Chat = () => {
   const [inputMessage, setInputMessage] = useState<string>('');
-  const [message, setMessage] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const selectedRoom = useSelector(
     (state: RootState) => state.room.selectedRoom
   );
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const selectedRoomName = useSelector(
+    (state: RootState) => state.room.selectedRoomName
+  );
+
+  const scrollDiv = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!selectedRoom) return;
@@ -43,7 +48,7 @@ export const Chat = () => {
       const q = query(messageCollectionRef, orderBy('createdAt'));
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const newMessages = snapshot.docs.map((doc) => doc.data() as Message);
-        setMessage(newMessages);
+        setMessages(newMessages);
       });
 
       return () => unsubscribe();
@@ -51,6 +56,15 @@ export const Chat = () => {
 
     fetchMessages();
   }, [selectedRoom]);
+
+  useEffect(() => {
+    const element = scrollDiv.current;
+
+    element?.scrollTo({
+      top: element.scrollHeight,
+      behavior: 'smooth',
+    });
+  }, [messages]);
 
   const sendMessage = async () => {
     if (!inputMessage.trim()) return;
@@ -81,10 +95,12 @@ export const Chat = () => {
 
   return (
     <div className="bg-gray-200 h-full p-4 flex flex-col">
-      <h1 className="text-2xl text-gray-900 font-semibold mb-4">Room 1</h1>
-      <div className="flex-grow overflow-y-auto mb-4">
-        {message.map((data, index) => {
-          const isUserMessage = data.sender === 'user';
+      <h1 className="text-2xl text-gray-900 font-semibold mb-4">
+        {selectedRoomName}
+      </h1>
+      <div className="flex-grow overflow-y-auto mb-4" ref={scrollDiv}>
+        {messages.map((message, index) => {
+          const isUserMessage = message.sender === 'user';
           return (
             <div
               className={`${isUserMessage ? 'text-right' : 'text-left'}`}
@@ -95,7 +111,7 @@ export const Chat = () => {
                   isUserMessage ? 'bg-blue-200' : 'bg-green-200'
                 }`}
               >
-                <p className="text-gray-900 font-medium">{data.text}</p>
+                <p className="text-gray-900 font-medium">{message.text}</p>
               </div>
             </div>
           );
@@ -116,10 +132,12 @@ export const Chat = () => {
               sendMessage();
             }
           }}
+          disabled={!selectedRoomName}
         />
         <button
           className="absolute inset-y-0 right-2 flex items-center"
           onClick={() => sendMessage()}
+          disabled={!selectedRoomName}
         >
           <ArrowUp />
         </button>

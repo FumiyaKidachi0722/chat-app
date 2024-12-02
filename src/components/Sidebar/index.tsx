@@ -14,7 +14,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { auth, db } from '@/firebase';
-import { setSelectedRoom } from '@/redux/roomSlice';
+import { setSelectedRoom, setSelectedRoomName } from '@/redux/roomSlice';
 import { RootState } from '@/redux/store';
 
 import { ArrowRightStartOnRectangle } from '../atoms/Icon/HeroIcons';
@@ -28,6 +28,7 @@ export const Sidebar = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const userId = useSelector((state: RootState) => state.user.userId);
   const user = useSelector((state: RootState) => state.user.user);
+
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -54,8 +55,9 @@ export const Sidebar = () => {
     fetchRooms();
   }, [userId]);
 
-  const selecteRoom = (roomId: string) => {
+  const selecteRoom = (roomId: string, roomName: string) => {
     dispatch(setSelectedRoom(roomId));
+    dispatch(setSelectedRoomName(roomName));
   };
 
   const addNewRoom = async () => {
@@ -94,7 +96,7 @@ export const Sidebar = () => {
             <li
               key={room.id}
               className="curspr-pointer border-b p-4 text-gray-900 hover:bg-blue-100 duration-150"
-              onClick={() => selecteRoom(room.id)}
+              onClick={() => selecteRoom(room.id, room.name)}
             >
               {room.name}
             </li>
@@ -109,7 +111,7 @@ export const Sidebar = () => {
       )}
 
       <div
-        onClick={handleLogout}
+        onClick={() => handleLogout}
         className="text-lg flex items-center justify-evenly mb-2 cursor-pointer p-4 text-slate-600 hover:bg-slate-200 duration-150"
       >
         <span>ログアウト</span>
