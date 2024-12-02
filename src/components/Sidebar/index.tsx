@@ -27,6 +27,7 @@ type Room = {
 export const Sidebar = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const userId = useSelector((state: RootState) => state.user.userId);
+  const user = useSelector((state: RootState) => state.user.user);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -100,6 +101,12 @@ export const Sidebar = () => {
           ))}
         </ul>
       </div>
+
+      {user && (
+        <div className="mb-2 p-4 text-slate-900 text-lg font-medium">
+          {user.email}
+        </div>
+      )}
 
       <div
         onClick={handleLogout}
