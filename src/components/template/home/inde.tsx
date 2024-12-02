@@ -10,7 +10,7 @@ export const HomeTemplate = () => {
         <div className="w-1/5 h-full border-r">
           <Sidebar />
         </div>
-        <div className="w-4/5 h-full border-r">
+        <div className="w-4/5 h-full">
           <Chat />
         </div>
       </div>

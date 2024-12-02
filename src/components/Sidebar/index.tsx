@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { ArrowRightStartOnRectangle } from '../atoms/Icon/HeroIcons';
+
 export const Sidebar = () => {
   return (
     <div
@@ -21,6 +23,11 @@ export const Sidebar = () => {
             Room 2
           </li>
         </ul>
+      </div>
+
+      <div className="text-lg flex items-center justify-evenly mb-2 cursor-pointer p-4 text-slate-600 hover:bg-slate-200 duration-150">
+        <span>ログアウト</span>
+        <ArrowRightStartOnRectangle />
       </div>
     </div>
   );
