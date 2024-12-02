@@ -111,7 +111,7 @@ export const Sidebar = () => {
       )}
 
       <div
-        onClick={() => handleLogout}
+        onClick={handleLogout}
         className="text-lg flex items-center justify-evenly mb-2 cursor-pointer p-4 text-slate-600 hover:bg-slate-200 duration-150"
       >
         <span>ログアウト</span>
