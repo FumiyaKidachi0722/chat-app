@@ -14,6 +14,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { db } from '@/firebase';
+import { gpt3Response } from '@/hooks/openai';
 import { RootState } from '@/redux/store';
 
 import { ArrowUp } from '../atoms/Icon/HeroIcons';
@@ -61,6 +62,14 @@ export const Chat = () => {
     const roomDocRef = doc(db, 'rooms', 'UxtrrWqyT7yRMSZLWAVf');
     const messageCollectionRef = collection(roomDocRef, 'messages');
     await addDoc(messageCollectionRef, messageData);
+
+    const response = gpt3Response(inputMessage);
+    const botResponse = (await response).choices[0].message.content;
+    await addDoc(messageCollectionRef, {
+      text: botResponse,
+      sender: 'bot',
+      createdAt: serverTimestamp(),
+    });
   };
 
   return (
