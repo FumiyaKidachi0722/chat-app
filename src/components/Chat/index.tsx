@@ -23,8 +23,9 @@ import { OverlaySpinner } from '../atoms/Icon/OverlaySpinner';
 type Message = {
   text: string;
   sender: string;
-  createdAt: Timestamp;
+  createdAt: Timestamp | null;
 };
+
 export const Chat = () => {
   const [inputMessage, setInputMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -40,26 +41,46 @@ export const Chat = () => {
 
   useEffect(() => {
     if (!selectedRoom) return;
+
     const fetchMessages = async () => {
-      const roomDocRef = doc(db, 'rooms', selectedRoom);
+      try {
+        const roomDocRef = doc(db, 'rooms', selectedRoom);
+        const messageCollectionRef = collection(roomDocRef, 'messages');
+        const q = query(messageCollectionRef, orderBy('createdAt'));
 
-      const messageCollectionRef = collection(roomDocRef, 'messages');
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+          const newMessages = snapshot.docs
+            .map((doc) => {
+              const data = doc.data();
+              if (
+                typeof data.text === 'string' &&
+                typeof data.sender === 'string' &&
+                (data.createdAt === null || data.createdAt instanceof Timestamp)
+              ) {
+                return data as Message;
+              }
+              console.warn('Invalid message data:', data);
+              return null;
+            })
+            .filter((message): message is Message => message !== null);
+          setMessages(newMessages);
+        });
 
-      const q = query(messageCollectionRef, orderBy('createdAt'));
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const newMessages = snapshot.docs.map((doc) => doc.data() as Message);
-        setMessages(newMessages);
-      });
-
-      return () => unsubscribe();
+        return unsubscribe;
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      }
     };
 
-    fetchMessages();
+    const unsubscribe = fetchMessages();
+
+    return () => {
+      if (unsubscribe instanceof Function) unsubscribe();
+    };
   }, [selectedRoom]);
 
   useEffect(() => {
     const element = scrollDiv.current;
-
     element?.scrollTo({
       top: element.scrollHeight,
       behavior: 'smooth',
@@ -69,34 +90,42 @@ export const Chat = () => {
   const sendMessage = async () => {
     if (!inputMessage.trim()) return;
 
-    const messageData = {
-      text: inputMessage,
-      sender: 'user',
-      createdAt: serverTimestamp(),
-    };
-
-    const roomDocRef = doc(db, 'rooms', 'UxtrrWqyT7yRMSZLWAVf');
+    const roomDocRef = doc(db, 'rooms', selectedRoom || 'defaultRoomId'); // エラーハンドリング
     const messageCollectionRef = collection(roomDocRef, 'messages');
-    await addDoc(messageCollectionRef, messageData);
 
-    setInputMessage('');
-    setIsLoading(true);
+    try {
+      const userMessage = {
+        text: inputMessage,
+        sender: 'user',
+        createdAt: serverTimestamp(),
+      };
 
-    const response = gpt3Response(inputMessage);
-    const botResponse = (await response).choices[0].message.content;
-    await addDoc(messageCollectionRef, {
-      text: botResponse,
-      sender: 'bot',
-      createdAt: serverTimestamp(),
-    });
+      await addDoc(messageCollectionRef, userMessage);
 
-    setIsLoading(false);
+      setInputMessage('');
+      setIsLoading(true);
+
+      const response = await gpt3Response(inputMessage);
+      const botResponse = response?.choices?.[0]?.message?.content || '...';
+
+      const botMessage = {
+        text: botResponse,
+        sender: 'bot',
+        createdAt: serverTimestamp(),
+      };
+
+      await addDoc(messageCollectionRef, botMessage);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="bg-gray-200 h-full p-4 flex flex-col">
       <h1 className="text-2xl text-gray-900 font-semibold mb-4">
-        {selectedRoomName}
+        {selectedRoomName || 'Chat Room'}
       </h1>
       <div className="flex-grow overflow-y-auto mb-4" ref={scrollDiv}>
         {messages.map((message, index) => {
@@ -133,6 +162,7 @@ export const Chat = () => {
             }
           }}
           disabled={!selectedRoomName}
+          aria-label="Message Input"
         />
         <button
           className="absolute inset-y-0 right-2 flex items-center"
