@@ -1,6 +1,6 @@
 'use client';
 
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -12,7 +12,7 @@ type Inputs = {
   email: string;
   password: string;
 };
-export const AuthRegisterTemplate = () => {
+export const AuthLoginTemplate = () => {
   const router = useRouter();
 
   const {
@@ -24,16 +24,17 @@ export const AuthRegisterTemplate = () => {
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     console.log('data: ', data);
 
-    await createUserWithEmailAndPassword(auth, data.email, data.password)
-      .then((userCrendential) => {
-        const user = userCrendential.user;
-        console.log('user: ', user);
-        router.push('/auth/login');
+    await signInWithEmailAndPassword(auth, data.email, data.password)
+      .then(() => {
+        router.push('/');
       })
       .catch((error) => {
         console.log('error.message: ', error.message);
-        if (error.code === 'auth/email-already-in-use') {
-          alert('このメールアドレスは既に登録されています');
+        if (
+          error.code === 'auth/invalid-credential' ||
+          error.code === 'auth/user-not-found'
+        ) {
+          alert('メールアドレスもしくはパスワードが間違っています');
         } else {
           alert(error.message);
         }
@@ -46,7 +47,7 @@ export const AuthRegisterTemplate = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="bg-white p-8 rounded-lg shadow-md w-96"
       >
-        <h1 className="mb-4 text-2xl text-gray-700 font-medium">新規登録</h1>
+        <h1 className="mb-4 text-2xl text-gray-700 font-medium">ログイン</h1>
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-600">
             Email
@@ -99,18 +100,18 @@ export const AuthRegisterTemplate = () => {
             type="submit"
             className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700"
           >
-            新規登録
+            ログイン
           </button>
         </div>
         <div className="mt-4">
           <span className="text-gray-600 text-sm">
-            既にアカウントをお持ちですか？
+            アカウントをお持ちでは場合
           </span>
           <Link
-            href={'/auth/login'}
+            href={'/auth/register'}
             className="text-blue-500 text-sm font-bold ml-1 hover:text-blue-700"
           >
-            ログインページへ
+            新規登録ページへ
           </Link>
         </div>
       </form>
