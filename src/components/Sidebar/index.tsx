@@ -1,17 +1,19 @@
 'use client';
 
 import {
+  addDoc,
   collection,
   onSnapshot,
   orderBy,
   query,
+  serverTimestamp,
   Timestamp,
   where,
 } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { db } from '@/firebase';
+import { auth, db } from '@/firebase';
 import { setSelectedRoom } from '@/redux/roomSlice';
 import { RootState } from '@/redux/store';
 
@@ -55,6 +57,22 @@ export const Sidebar = () => {
     dispatch(setSelectedRoom(roomId));
   };
 
+  const addNewRoom = async () => {
+    const roomName = prompt('ルーム名を入力してください');
+    if (roomName) {
+      const newRoomRef = collection(db, 'rooms');
+      await addDoc(newRoomRef, {
+        name: roomName,
+        userId: userId,
+        createdAt: serverTimestamp(),
+      });
+    }
+  };
+
+  const handleLogout = () => {
+    auth.signOut();
+  };
+
   return (
     <div
       className="h-full overflow-y-auto px-5 flex flex-col"
@@ -63,7 +81,10 @@ export const Sidebar = () => {
       }}
     >
       <div className="flex-grow">
-        <div className="cursor-pointer flex justify-evenly items-center border mt-2 rounded-md hover:bg-blue-100 duration-150">
+        <div
+          onClick={addNewRoom}
+          className="cursor-pointer flex justify-evenly items-center border mt-2 rounded-md hover:bg-blue-100 duration-150"
+        >
           <span className="text-gray-900 p-4 text-2xl">+</span>
           <h1 className="text-gray-900 text-lg font-semibold p-4">New Chat</h1>
         </div>
@@ -80,7 +101,10 @@ export const Sidebar = () => {
         </ul>
       </div>
 
-      <div className="text-lg flex items-center justify-evenly mb-2 cursor-pointer p-4 text-slate-600 hover:bg-slate-200 duration-150">
+      <div
+        onClick={handleLogout}
+        className="text-lg flex items-center justify-evenly mb-2 cursor-pointer p-4 text-slate-600 hover:bg-slate-200 duration-150"
+      >
         <span>ログアウト</span>
         <ArrowRightStartOnRectangle />
       </div>
