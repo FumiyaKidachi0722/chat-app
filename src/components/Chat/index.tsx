@@ -13,12 +13,11 @@ import {
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import { ArrowUp } from '@/components/Icon/HeroIcons';
+import { OverlaySpinner } from '@/components/Icon/OverlaySpinner';
 import { db } from '@/firebase';
 import { gpt3Response } from '@/hooks/openai';
 import { RootState } from '@/redux/store';
-
-import { ArrowUp } from '../atoms/Icon/HeroIcons';
-import { OverlaySpinner } from '../atoms/Icon/OverlaySpinner';
 
 type Message = {
   text: string;

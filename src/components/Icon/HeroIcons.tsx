@@ -1,4 +1,4 @@
-// src/components/atoms/Icon/HeroIcons.ts
+// src/components/Icon/HeroIcons.ts
 
 export const ArrowUp = () => {
   return (

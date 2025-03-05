@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
-import { OverlaySpinner } from '@/components/atoms/Icon/OverlaySpinner';
 import { Chat } from '@/components/Chat';
+import { OverlaySpinner } from '@/components/Icon/OverlaySpinner';
 import { Sidebar } from '@/components/Sidebar';
 import { RootState } from '@/redux/store';
 
