@@ -38,6 +38,9 @@ NEXT_PUBLIC_FIREBASE_APP_ID=
 NEXT_PUBLIC_OPENAI_API_KEY=
 ```
 
+以下、参照
+https://drive.google.com/file/d/10hjd9UPe5ID8gkDRC2Eg1NSw4XnmQ5Se/view?usp=drive_link
+
 ### 4. 開発サーバーの起動
 
 ```bash
