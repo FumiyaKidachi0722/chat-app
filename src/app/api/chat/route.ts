@@ -2,6 +2,9 @@ import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
+// Ensure Node.js runtime on Vercel (OpenAI SDK requires Node env)
+export const runtime = 'nodejs';
+
 export async function POST(req: NextRequest) {
   // Parse input outside try so it's available in catch/fallbacks
   let userInput: string | undefined;
@@ -23,7 +26,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const headerKey = req.headers.get('x-openai-key')?.trim();
-    const apiKey = headerKey || process.env.OPENAI_API_KEY || '';
+    // Use ONLY user-provided key from the client. No server env fallback.
+    const apiKey = headerKey || '';
     if (!apiKey) {
       return NextResponse.json(
         { error: 'Missing OpenAI API key. Set it in Settings.' },
