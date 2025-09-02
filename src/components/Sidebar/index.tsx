@@ -14,9 +14,11 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { ArrowRightStartOnRectangle } from '@/components/Icon/HeroIcons';
+import { OpenAIKeyButton } from '@/components/Settings/OpenAIKeyModal';
 import { auth, db } from '@/firebase';
 import { setSelectedRoom, setSelectedRoomName } from '@/redux/roomSlice';
 import { RootState } from '@/redux/store';
+import { CSVImportButton } from '@/components/CSVImport/Modal';
 
 type Room = {
   id: string;
@@ -84,6 +86,12 @@ export const Sidebar = () => {
       }}
     >
       <div className="flex-grow">
+        <div className="mt-2">
+          <CSVImportButton />
+        </div>
+        <div className="mt-2">
+          <OpenAIKeyButton />
+        </div>
         <div
           onClick={addNewRoom}
           className="cursor-pointer flex justify-evenly items-center border mt-2 rounded-md hover:bg-blue-100 duration-150"

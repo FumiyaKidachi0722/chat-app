@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "eslint --ext .ts,.tsx,.js,.jsx src --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md,css,scss}\"",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
@@ -24,14 +27,17 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@typescript-eslint/eslint-plugin": "^8.16.0",
+    "@typescript-eslint/parser": "^8.41.0",
     "eslint": "^9.34.0",
     "eslint-config-next": "^15.0.5",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-prettier": "^5.5.4",
     "postcss": "^8",
     "prettier": "^3.4.1",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "zod": "^3.25.76"
   }
 }

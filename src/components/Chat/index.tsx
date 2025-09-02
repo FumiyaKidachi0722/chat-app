@@ -114,11 +114,14 @@ export const Chat = () => {
 
       await addDoc(messageCollectionRef, botMessage);
     } catch (error: any) {
-      console.error('Error sending message:', error);
-      const friendly =
-        typeof error?.message === 'string' && error.message.includes('429')
-          ? '現在AIが利用できません（429: 利用上限/請求設定をご確認ください）。'
-          : 'AI応答でエラーが発生しました。時間をおいて再試行してください。';
+      // Avoid noisy console errors for handled cases
+      console.warn('Message send encountered a handled issue');
+      const msg = String(error?.message || '');
+      const friendly = msg.includes('未設定') || /missing openai api key/i.test(msg)
+        ? 'OpenAI APIキーが未設定です。サイドバーの設定から登録してください。'
+        : msg.includes('429')
+        ? '現在AIが利用できません（429: 利用上限/請求設定をご確認ください）。'
+        : 'AI応答でエラーが発生しました。時間をおいて再試行してください。';
 
       try {
         const botMessage = {
