@@ -1,5 +1,8 @@
 'use client';
 
+import React, { useEffect, useState } from 'react';
+import type {
+  Timestamp} from 'firebase/firestore';
 import {
   addDoc,
   collection,
@@ -7,18 +10,16 @@ import {
   orderBy,
   query,
   serverTimestamp,
-  Timestamp,
   where,
 } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { CSVImportButton } from '@/components/CSVImport/Modal';
 import { ArrowRightStartOnRectangle } from '@/components/Icon/HeroIcons';
 import { OpenAIKeyButton } from '@/components/Settings/OpenAIKeyModal';
 import { auth, db } from '@/firebase';
 import { setSelectedRoom, setSelectedRoomName } from '@/redux/roomSlice';
-import { RootState } from '@/redux/store';
-import { CSVImportButton } from '@/components/CSVImport/Modal';
+import type { RootState } from '@/redux/store';
 
 type Room = {
   id: string;

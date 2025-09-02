@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
+
 import { Portal } from '@/components/Portal';
-import { CSVImport } from './index';
+
+import { CSVImport } from ".";
 
 export const CSVImportButton: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -52,4 +54,3 @@ export const CSVImportButton: React.FC = () => {
 };
 
 export default CSVImportButton;
-

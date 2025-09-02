@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { addDoc, collection, doc, serverTimestamp } from 'firebase/firestore';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { db } from '@/firebase';
+import { gptResponse } from '@/hooks/openai';
 import type { RootState } from '@/redux/store';
 import { setBusy } from '@/redux/uiSlice';
-import { gptResponse } from '@/hooks/openai';
 
 type ParsedRow = {
   room_name: string;
@@ -54,7 +55,7 @@ export const CSVImport: React.FC = () => {
       if (parsed.length === 0) {
         setFeedback('CSVの形式は room_name,message のヘッダーが必要です。');
       }
-    } catch (e: any) {
+    } catch {
       setFeedback('CSVの読み込みに失敗しました。');
     } finally {
       setIsParsing(false);
@@ -96,28 +97,57 @@ export const CSVImport: React.FC = () => {
           return text;
         };
         try {
-          let ai = await callAI();
-          await addDoc(msgCol, { text: ai, sender: 'bot', createdAt: serverTimestamp() });
-        } catch (e1: any) {
+          const ai = await callAI();
+          await addDoc(msgCol, {
+            text: ai,
+            sender: 'bot',
+            createdAt: serverTimestamp(),
+          });
+        } catch (e1: unknown) {
           // one backoff retry (800ms)
           await new Promise((rr) => setTimeout(rr, 800));
           try {
             const ai2 = await callAI();
-            await addDoc(msgCol, { text: ai2, sender: 'bot', createdAt: serverTimestamp() });
-          } catch (e2: any) {
-            const emsg = String(e2?.message || e1?.message || '');
-            const fallback = emsg.includes('未設定') || /missing openai api key/i.test(emsg)
-              ? 'OpenAI APIキーが未設定です。サイドバーの設定から登録してください。'
-              : emsg.includes('429')
-              ? '現在AIが利用できません（429: 利用上限/請求設定をご確認ください）。'
-              : 'AI応答でエラーが発生しました。時間をおいて再試行してください。';
+            await addDoc(msgCol, {
+              text: ai2,
+              sender: 'bot',
+              createdAt: serverTimestamp(),
+            });
+          } catch (e2: unknown) {
+            const emsg = (() => {
+              const e2obj =
+                e2 && typeof e2 === 'object'
+                  ? (e2 as Record<string, unknown>)
+                  : undefined;
+              const e1obj =
+                e1 && typeof e1 === 'object'
+                  ? (e1 as Record<string, unknown>)
+                  : undefined;
+              const m2 =
+                typeof e2obj?.message === 'string' ? e2obj.message : '';
+              const m1 =
+                typeof e1obj?.message === 'string' ? e1obj.message : '';
+              return String(m2 || m1 || '');
+            })();
+            const fallback =
+              emsg.includes('未設定') || /missing openai api key/i.test(emsg)
+                ? 'OpenAI APIキーが未設定です。サイドバーの設定から登録してください。'
+                : emsg.includes('429')
+                  ? '現在AIが利用できません（429: 利用上限/請求設定をご確認ください）。'
+                  : 'AI応答でエラーが発生しました。時間をおいて再試行してください。';
             try {
-              await addDoc(msgCol, { text: fallback, sender: 'bot', createdAt: serverTimestamp() });
-            } catch {}
+              await addDoc(msgCol, {
+                text: fallback,
+                sender: 'bot',
+                createdAt: serverTimestamp(),
+              });
+            } catch {
+              void 0;
+            }
           }
         }
         success++;
-      } catch (e) {
+      } catch {
         // continue next row
       }
       // gentle spacing to avoid rapid-fire requests
@@ -150,9 +180,7 @@ export const CSVImport: React.FC = () => {
         />
       </div>
 
-      {isParsing && (
-        <div className="text-sm text-gray-600 mt-2">解析中...</div>
-      )}
+      {isParsing && <div className="text-sm text-gray-600 mt-2">解析中...</div>}
 
       {rows.length > 0 && (
         <>
@@ -164,15 +192,21 @@ export const CSVImport: React.FC = () => {
               <thead className="bg-gray-50 sticky top-0">
                 <tr>
                   <th className="px-2 py-2 text-left text-gray-600 w-16">#</th>
-                  <th className="px-2 py-2 text-left text-gray-600">room_name</th>
+                  <th className="px-2 py-2 text-left text-gray-600">
+                    room_name
+                  </th>
                   <th className="px-2 py-2 text-left text-gray-600">message</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r, i) => (
                   <tr key={i} className={i % 2 ? 'bg-white' : 'bg-gray-50/40'}>
-                    <td className="px-2 py-2 align-top text-gray-500">{i + 1}</td>
-                    <td className="px-2 py-2 align-top break-words">{r.room_name}</td>
+                    <td className="px-2 py-2 align-top text-gray-500">
+                      {i + 1}
+                    </td>
+                    <td className="px-2 py-2 align-top break-words">
+                      {r.room_name}
+                    </td>
                     <td className="px-2 py-2 align-top break-words whitespace-pre-wrap">
                       {r.message}
                     </td>
@@ -194,9 +228,7 @@ export const CSVImport: React.FC = () => {
         </button>
       </div>
 
-      {feedback && (
-        <div className="mt-2 text-sm text-gray-700">{feedback}</div>
-      )}
+      {feedback && <div className="mt-2 text-sm text-gray-700">{feedback}</div>}
 
       <div className="mt-2 text-xs text-gray-500">
         期待ヘッダー: <code>room_name,message</code>

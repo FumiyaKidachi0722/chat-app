@@ -1,5 +1,8 @@
 export const gptResponse = async (inputMessage: string) => {
-  const key = typeof window !== 'undefined' ? localStorage.getItem('openai_api_key') : null;
+  const key =
+    typeof window !== 'undefined'
+      ? localStorage.getItem('openai_api_key')
+      : null;
   // Soft handling: return a friendly message instead of throwing
   if (!key) {
     return 'OpenAI APIキーが未設定です。サイドバーの設定から登録してください。';
@@ -24,7 +27,10 @@ export const gptResponse = async (inputMessage: string) => {
         if (res.status === 401 || /missing openai api key/i.test(m)) {
           return 'OpenAI APIキーが未設定です。サイドバーの設定から登録してください。';
         }
-        if (res.status === 429 || /insufficient_quota|billing_not_active/i.test(m)) {
+        if (
+          res.status === 429 ||
+          /insufficient_quota|billing_not_active/i.test(m)
+        ) {
           return '現在AIが利用できません（429: 利用上限/請求設定をご確認ください）。';
         }
         return 'AI応答でエラーが発生しました。時間をおいて再試行してください。';

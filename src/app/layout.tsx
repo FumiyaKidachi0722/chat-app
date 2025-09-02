@@ -1,9 +1,11 @@
 // src/app/layout.tsx
-import './globals.css';
 import type { Metadata } from 'next';
 
-import { Providers } from './providers';
 import { GlobalBusyOverlay } from '@/components/GlobalBusyOverlay';
+
+import { Providers } from './providers';
+
+import './globals.css';
 
 export const metadata: Metadata = {
   title: 'chat-app',

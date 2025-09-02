@@ -1,13 +1,13 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 
 import { Chat } from '@/components/Chat';
 import { OverlaySpinner } from '@/components/Icon/OverlaySpinner';
 import { Sidebar } from '@/components/Sidebar';
-import { RootState } from '@/redux/store';
+import type { RootState } from '@/redux/store';
 
 export const HomeTemplate = () => {
   const userId = useSelector((state: RootState) => state.user.userId);

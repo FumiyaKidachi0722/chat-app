@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useSelector } from 'react-redux';
+
 import { OverlaySpinner } from '@/components/Icon/OverlaySpinner';
 import type { RootState } from '@/redux/store';
 
@@ -12,4 +13,3 @@ export const GlobalBusyOverlay: React.FC = () => {
 };
 
 export default GlobalBusyOverlay;
-

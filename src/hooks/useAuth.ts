@@ -1,11 +1,11 @@
 'use client';
 
-import { onAuthStateChanged } from 'firebase/auth';
 import { useEffect } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
 import { useDispatch } from 'react-redux';
 
 import { auth } from '@/firebase';
-import { setUser, clearUser, createUserPayload } from '@/redux/userSlice';
+import { clearUser, createUserPayload,setUser } from '@/redux/userSlice';
 
 export const useAuthListener = () => {
   const dispatch = useDispatch();

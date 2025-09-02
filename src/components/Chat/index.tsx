@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useEffect, useRef, useState } from 'react';
 import {
   addDoc,
   collection,
@@ -10,14 +11,13 @@ import {
   serverTimestamp,
   Timestamp,
 } from 'firebase/firestore';
-import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { ArrowUp } from '@/components/Icon/HeroIcons';
 import { OverlaySpinner } from '@/components/Icon/OverlaySpinner';
 import { db } from '@/firebase';
 import { gptResponse } from '@/hooks/openai';
-import { RootState } from '@/redux/store';
+import type { RootState } from '@/redux/store';
 
 type Message = {
   text: string;
@@ -113,15 +113,19 @@ export const Chat = () => {
       };
 
       await addDoc(messageCollectionRef, botMessage);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Avoid noisy console errors for handled cases
       console.warn('Message send encountered a handled issue');
-      const msg = String(error?.message || '');
-      const friendly = msg.includes('未設定') || /missing openai api key/i.test(msg)
-        ? 'OpenAI APIキーが未設定です。サイドバーの設定から登録してください。'
-        : msg.includes('429')
-        ? '現在AIが利用できません（429: 利用上限/請求設定をご確認ください）。'
-        : 'AI応答でエラーが発生しました。時間をおいて再試行してください。';
+      const obj = (error && typeof error === 'object')
+        ? (error as Record<string, unknown>)
+        : undefined;
+      const msg = typeof obj?.message === 'string' ? obj.message : '';
+      const friendly =
+        msg.includes('未設定') || /missing openai api key/i.test(msg)
+          ? 'OpenAI APIキーが未設定です。サイドバーの設定から登録してください。'
+          : msg.includes('429')
+            ? '現在AIが利用できません（429: 利用上限/請求設定をご確認ください）。'
+            : 'AI応答でエラーが発生しました。時間をおいて再試行してください。';
 
       try {
         const botMessage = {
@@ -130,7 +134,9 @@ export const Chat = () => {
           createdAt: serverTimestamp(),
         };
         await addDoc(messageCollectionRef, botMessage);
-      } catch {}
+      } catch {
+        void 0;
+      }
     } finally {
       setIsLoading(false);
     }

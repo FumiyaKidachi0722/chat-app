@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
 export async function POST(req: NextRequest) {
@@ -55,74 +56,68 @@ export async function POST(req: NextRequest) {
         reasoning: { effort: 'low' as const },
         // Many Responses API models (e.g., o4-mini) don't support temperature
       });
-      // Robust text extraction for Responses API
-      const anyResp: any = resp as any;
-      if (
-        typeof anyResp?.output_text === 'string' &&
-        anyResp.output_text.trim()
-      ) {
-        return anyResp.output_text.trim();
+      // Robust text extraction for Responses API (typed)
+      if (typeof resp.output_text === 'string' && resp.output_text.trim()) {
+        return resp.output_text.trim();
       }
       const parts: string[] = [];
-      const takeContent = (contentArr: any[]) => {
-        for (const c of contentArr) {
-          // Typical shape: { type: 'output_text', text: { value: '...', annotations: [] } }
-          if (c?.type === 'output_text' && typeof c?.text?.value === 'string') {
-            parts.push(c.text.value);
-          } else if (typeof c?.text?.value === 'string') {
-            parts.push(c.text.value);
-          } else if (typeof c?.text === 'string') {
-            parts.push(c.text);
-          } else if (Array.isArray(c?.content)) {
-            takeContent(c.content);
+      for (const item of resp.output) {
+        if (item.type === 'message') {
+          for (const c of item.content) {
+            if (c.type === 'output_text' && typeof c.text === 'string') {
+              parts.push(c.text);
+            }
           }
         }
-      };
-      if (Array.isArray(anyResp?.output)) {
-        for (const item of anyResp.output) {
-          if (Array.isArray(item?.content)) takeContent(item.content);
-        }
-      } else if (Array.isArray(anyResp?.content)) {
-        takeContent(anyResp.content);
       }
       const joined = parts.join('\n').trim();
       if (joined) return joined;
       try {
         // dev logging of unexpected shape
         if (process.env.NODE_ENV !== 'production') {
-          console.warn('Responses API: unexpected no-text shape', JSON.stringify(anyResp).slice(0, 1500));
+          console.warn(
+            'Responses API: unexpected no-text shape',
+            JSON.stringify(resp).slice(0, 1500)
+          );
         }
-      } catch {}
-      // As a last resort
-      const fb = anyResp?.choices?.[0]?.message?.content ?? '';
-      return typeof fb === 'string' ? fb : '';
+      } catch {
+        void 0;
+      }
+      // As a last resort, return empty text
+      return '';
     };
 
     try {
-      let message = await callModel(preferred);
-      console.log('message: ', message);
+      const message = await callModel(preferred);
+      console.warn('message: ', message);
       if (typeof message !== 'string' || message.trim().length === 0) {
         throw new Error('empty_response');
       }
       return NextResponse.json({ message });
-    } catch (e: any) {
-      const msg = String(e?.message || '');
+    } catch (e: unknown) {
+      const errObj = (e && typeof e === 'object')
+        ? (e as Record<string, unknown>)
+        : undefined;
+      const msg = typeof errObj?.message === 'string' ? errObj.message : '';
+      const status = typeof errObj?.status === 'number' ? errObj.status : undefined;
+      const code = typeof errObj?.code === 'string' ? errObj.code : undefined;
       const isModelAccessError =
-        e?.status === 403 ||
-        e?.code === 'model_not_found' ||
+        status === 403 ||
+        code === 'model_not_found' ||
         /does not have access to model/i.test(msg);
       const isInvalidKey =
-        e?.status === 401 ||
-        e?.code === 'invalid_api_key' ||
+        status === 401 ||
+        code === 'invalid_api_key' ||
         /incorrect api key|invalid api key/i.test(msg);
       if (isInvalidKey) {
         return NextResponse.json({
-          message: 'OpenAI APIキーが無効です。正しいキーをサイドバーの設定から登録してください。',
+          message:
+            'OpenAI APIキーが無効です。正しいキーをサイドバーの設定から登録してください。',
         });
       }
       const shouldFallback =
         isModelAccessError ||
-        e?.status >= 500 ||
+        (typeof status === 'number' && status >= 500) ||
         msg.includes('empty_response') ||
         /invalid_response|parse|Unexpected/.test(msg);
       const fallback = 'gpt-3.5-turbo';
@@ -132,7 +127,7 @@ export async function POST(req: NextRequest) {
           if (typeof m2 === 'string' && m2.trim()) {
             return NextResponse.json({ message: m2 });
           }
-        } catch (e2) {
+        } catch {
           // fall through to outer catch
         }
       }
@@ -145,12 +140,20 @@ export async function POST(req: NextRequest) {
       );
       return NextResponse.json({ message: fallbackText });
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('OpenAI API error:', err);
-    const status = typeof err?.status === 'number' ? err.status : 500;
-    const details = err?.message || 'Internal Server Error';
-
-    const code = err?.code || err?.error?.code || err?.error?.type;
+    const errObj = (err && typeof err === 'object')
+      ? (err as Record<string, unknown>)
+      : undefined;
+    const status = typeof errObj?.status === 'number' ? errObj.status : 500;
+    const details = typeof errObj?.message === 'string' ? errObj.message : 'Internal Server Error';
+    const nested = (errObj?.error && typeof errObj.error === 'object' && errObj.error !== null)
+      ? (errObj.error as Record<string, unknown>)
+      : undefined;
+    const code =
+      (typeof errObj?.code === 'string' ? errObj.code : undefined) ||
+      (typeof nested?.code === 'string' ? nested.code : undefined) ||
+      (typeof nested?.type === 'string' ? nested.type : undefined);
     const isBillingOrQuota =
       status === 429 &&
       (code === 'billing_not_active' || code === 'insufficient_quota');

@@ -1,8 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit';
 
 import roomReducer from '@/redux/roomSlice';
-import userReducer from '@/redux/userSlice';
 import uiReducer from '@/redux/uiSlice';
+import userReducer from '@/redux/userSlice';
 
 export const store = configureStore({
   reducer: {

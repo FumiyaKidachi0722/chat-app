@@ -1,4 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
 interface UIState {
   isBusy: boolean;
@@ -14,7 +15,10 @@ const uiSlice = createSlice({
   name: 'ui',
   initialState,
   reducers: {
-    setBusy(state, action: PayloadAction<{ value: boolean; message?: string | null }>) {
+    setBusy(
+      state,
+      action: PayloadAction<{ value: boolean; message?: string | null }>
+    ) {
       state.isBusy = action.payload.value;
       state.busyMessage = action.payload.message ?? null;
     },
@@ -23,4 +27,3 @@ const uiSlice = createSlice({
 
 export const { setBusy } = uiSlice.actions;
 export default uiSlice.reducer;
-

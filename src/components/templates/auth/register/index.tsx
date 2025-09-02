@@ -1,10 +1,11 @@
 'use client';
 
+import React from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import type { SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 import { auth } from '@/firebase';
 
@@ -23,13 +24,10 @@ export const AuthRegisterTemplate = () => {
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     await createUserWithEmailAndPassword(auth, data.email, data.password)
-      .then((userCrendential) => {
-        const user = userCrendential.user;
-        console.log('user: ', user);
+      .then(() => {
         router.push('/auth/login');
       })
       .catch((error) => {
-        console.log('error.message: ', error.message);
         if (error.code === 'auth/email-already-in-use') {
           alert('このメールアドレスは既に登録されています');
         } else {
@@ -76,8 +74,7 @@ export const AuthRegisterTemplate = () => {
                 message: 'パスワードは8文字以上入力してください',
               },
               pattern: {
-                value:
-                  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\[\]{};:'",.<>?\\|`~^/-]).+$/,
+                value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).+$/,
                 message:
                   'パスワードは大文字、小文字、数字、記号をそれぞれ1文字以上含めてください',
               },
