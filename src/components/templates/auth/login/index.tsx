@@ -1,10 +1,11 @@
 'use client';
 
+import React from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import type { SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 import { auth } from '@/firebase';
 
@@ -27,7 +28,6 @@ export const AuthLoginTemplate = () => {
         router.push('/');
       })
       .catch((error) => {
-        console.log('error.message: ', error.message);
         if (
           error.code === 'auth/invalid-credential' ||
           error.code === 'auth/user-not-found'
@@ -77,8 +77,7 @@ export const AuthLoginTemplate = () => {
                 message: 'パスワードは8文字以上入力してください',
               },
               pattern: {
-                value:
-                  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\[\]{};:'",.<>?\\|`~^/-]).+$/,
+                value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).+$/,
                 message:
                   'パスワードは大文字、小文字、数字、記号をそれぞれ1文字以上含めてください',
               },

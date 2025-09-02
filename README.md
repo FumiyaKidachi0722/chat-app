@@ -35,7 +35,7 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 NEXT_PUBLIC_FIREBASE_APP_ID=
 
-NEXT_PUBLIC_OPENAI_API_KEY=
+OPENAI_API_KEY=
 ```
 
 以下、参照
@@ -50,3 +50,24 @@ npm run dev
 ブラウザで `http://localhost:3000` にアクセスしてアプリを確認してください。
 
 ---
+
+## CSVインポート（サンプルCSV付き）
+
+サイドバーの「CSV インポート」ボタンからモーダルを開き、以下の形式の CSV を選択して「取り込み実行」を押すと、各行についてルームを作成し、最初のユーザーメッセージを登録します。その後、AI への問い合わせを順次実行し、ボットの初回返信も自動で登録します（レート制御のため少し間隔を空けて送信）。
+
+- 期待ヘッダー: `room_name,message`
+- 例: `public/sample-rooms.csv`
+
+CSV サンプル:
+
+```
+room_name,message
+顧客Aの相談,最初の質問です。見積もりをお願いします。
+社内タスク,来週の会議アジェンダをまとめてください。
+学習メモ,Reactのカスタムフックについて要点を整理してください。
+```
+
+注意事項:
+
+- 簡易パーサーのため、現状は引用符/カンマ埋め込みに未対応です（必要なら強化可能）。
+- 取り込みはクライアント側で実行され、`rooms` と `rooms/{roomId}/messages` に書き込みます。

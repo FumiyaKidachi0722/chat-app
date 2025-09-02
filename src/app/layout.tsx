@@ -1,8 +1,11 @@
 // src/app/layout.tsx
-import './globals.css';
 import type { Metadata } from 'next';
 
+import { GlobalBusyOverlay } from '@/components/GlobalBusyOverlay';
+
 import { Providers } from './providers';
+
+import './globals.css';
 
 export const metadata: Metadata = {
   title: 'chat-app',
@@ -17,7 +20,10 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <GlobalBusyOverlay />
+        </Providers>
         <div id="portal-root"></div>
       </body>
     </html>

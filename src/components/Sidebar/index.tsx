@@ -1,5 +1,8 @@
 'use client';
 
+import React, { useEffect, useState } from 'react';
+import type {
+  Timestamp} from 'firebase/firestore';
 import {
   addDoc,
   collection,
@@ -7,16 +10,16 @@ import {
   orderBy,
   query,
   serverTimestamp,
-  Timestamp,
   where,
 } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { CSVImportButton } from '@/components/CSVImport/Modal';
 import { ArrowRightStartOnRectangle } from '@/components/Icon/HeroIcons';
+import { OpenAIKeyButton } from '@/components/Settings/OpenAIKeyModal';
 import { auth, db } from '@/firebase';
 import { setSelectedRoom, setSelectedRoomName } from '@/redux/roomSlice';
-import { RootState } from '@/redux/store';
+import type { RootState } from '@/redux/store';
 
 type Room = {
   id: string;
@@ -84,6 +87,12 @@ export const Sidebar = () => {
       }}
     >
       <div className="flex-grow">
+        <div className="mt-2">
+          <CSVImportButton />
+        </div>
+        <div className="mt-2">
+          <OpenAIKeyButton />
+        </div>
         <div
           onClick={addNewRoom}
           className="cursor-pointer flex justify-evenly items-center border mt-2 rounded-md hover:bg-blue-100 duration-150"
