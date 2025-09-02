@@ -16,7 +16,7 @@ import { useSelector } from 'react-redux';
 import { ArrowUp } from '@/components/Icon/HeroIcons';
 import { OverlaySpinner } from '@/components/Icon/OverlaySpinner';
 import { db } from '@/firebase';
-import { gpt3Response } from '@/hooks/openai';
+import { gptResponse } from '@/hooks/openai';
 import { RootState } from '@/redux/store';
 
 type Message = {
@@ -104,8 +104,7 @@ export const Chat = () => {
       setInputMessage('');
       setIsLoading(true);
 
-      const response = await gpt3Response(inputMessage);
-      const botResponse = response?.choices?.[0]?.message?.content || '...';
+      const botResponse = (await gptResponse(inputMessage)) || '...';
 
       const botMessage = {
         text: botResponse,
@@ -114,8 +113,21 @@ export const Chat = () => {
       };
 
       await addDoc(messageCollectionRef, botMessage);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
+      const friendly =
+        typeof error?.message === 'string' && error.message.includes('429')
+          ? '現在AIが利用できません（429: 利用上限/請求設定をご確認ください）。'
+          : 'AI応答でエラーが発生しました。時間をおいて再試行してください。';
+
+      try {
+        const botMessage = {
+          text: friendly,
+          sender: 'bot',
+          createdAt: serverTimestamp(),
+        };
+        await addDoc(messageCollectionRef, botMessage);
+      } catch {}
     } finally {
       setIsLoading(false);
     }

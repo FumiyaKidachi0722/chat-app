@@ -1,15 +1,15 @@
-import OpenAI from 'openai';
-
-export const openai = new OpenAI({
-  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true,
-});
-
-export const gpt3Response = async (inputMessage: string) => {
-  const response = await openai.chat.completions.create({
-    messages: [{ role: 'user', content: inputMessage }],
-    model: 'gpt-3.5-turbo',
+export const gptResponse = async (inputMessage: string) => {
+  const res = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input: inputMessage }),
   });
 
-  return response;
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Chat API error: ${res.status} ${text}`);
+  }
+
+  const data = (await res.json()) as { message?: string };
+  return data.message ?? '';
 };
